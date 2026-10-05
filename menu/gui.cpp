@@ -26,10 +26,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#ifndef VERIX
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#else
+#include <SVC.h>
+#endif
 
 #ifndef ndlib
 	#include <SDL/SDL.h>
@@ -57,6 +62,10 @@
 	SDL_Surface *gui_screen;
 	SDL_Rect gui_dst, gui_dst2;
 	SDL_Event gui_event;
+#endif
+
+#ifdef VERIX
+extern int console;
 #endif
 
 char file_name[MAX_LENGH][512];
@@ -120,7 +129,7 @@ void init(void)
 int main(int argc, char* argv[]) 
 {
 	/* Buffer to hold =>the current directory */
-	char* buf = NULL;
+	char buf[MAX_LENGH]; //char* buf = NULL;
 	unsigned char exit_app = 0;
 #ifdef EXECUTE_APP
 	unsigned char file_chosen;
@@ -136,7 +145,12 @@ int main(int argc, char* argv[])
 	clear_entirescreen();
 	
 	/* Set it to the current directory. */
+	#ifdef VERIX
+	getcwd(buf, MAX_LENGH);
+	currentdir = buf;
+	#else 
 	currentdir = getcwd(buf, MAX_LENGH);
+	#endif
 	
 	/* List 12 files to be shown on screen (here, it is the first chunck) */
 	list_all_files(currentdir);
@@ -209,7 +223,11 @@ int main(int argc, char* argv[])
 					
 					if (file_type[fileid_selected] == BLUE_C) 
 					{
+						#ifdef VERIX
+						snprintf(file_to_start, MAX_LENGH, "%s%s", currentdir, file_name[fileid_selected]);
+						#else
 						snprintf(file_to_start, MAX_LENGH, "%s/%s", currentdir, file_name[fileid_selected]);
+						#endif
 						#ifdef EXECUTE_APP
 							file_chosen = 1;
 							button_state[6] = 1;
@@ -252,7 +270,12 @@ int main(int argc, char* argv[])
 				init();
 				
 				clear_entirescreen();
+				#ifdef VERIX
+				getcwd(buf, MAX_LENGH);
+				currentdir = buf;
+				#else
 				currentdir = getcwd(buf, MAX_LENGH);
+				#endif
 				list_all_files(currentdir);
 				update_entirescreen();
 				refresh_cursor(2);
@@ -279,7 +302,16 @@ int main(int argc, char* argv[])
 
 void controls()
 {
-#ifndef ndlib
+	
+#ifdef VERIX
+	char keyBuffer[20];
+	char key=0;
+	
+	int pending = kbd_pending_count();
+	read(console, keyBuffer, 1);
+	key = keyBuffer[0];
+	
+#elif not defined(ndlib)
     Uint8 *keystate = SDL_GetKeyState(NULL);
 #endif
 	int pad;
@@ -391,6 +423,8 @@ void goto_folder()
 	
 #ifdef _TINSPIRE
 	snprintf(currentdir, MAX_LENGH, "%s%s", currentdir, file_name[fileid_selected]);
+#elif defined(VERIX)
+	snprintf(currentdir, MAX_LENGH, "%s%s", currentdir, file_name[fileid_selected]);
 #else
 	snprintf(currentdir, MAX_LENGH, "%s/%s", currentdir, file_name[fileid_selected]);
 #endif
@@ -400,6 +434,13 @@ void goto_folder()
 		NU_Set_Current_Dir(currentdir);
 		/* This will return the current directory properly */
 		NU_Current_Dir("A:",currentdir);
+		
+	#elif defined(VERIX)
+		/* Set it to the current directory. */
+		chdir(currentdir);
+		/* Get current directory. */
+		getcwd(buf, MAX_LENGH);
+		currentdir = buf;
 	#else
 		/* Set it to the current directory. */
 		chdir(currentdir);
@@ -492,9 +533,6 @@ void update_entirescreen()
 
 void list_all_files(char* directory)
 {
-	DIR *dir;
-	struct dirent *ent;
-	
 	unsigned char temp;
 	
 	#if MAX_LENGH < 255
@@ -517,6 +555,70 @@ void list_all_files(char* directory)
 	temp = 0;
 	pc = -1;
 	numb_files = 0;
+	
+#ifdef VERIX
+	
+	char pathname[MAX_LENGH];
+	strcpy(pathname, directory);
+	
+	/*dbprintf("Is folder: %d\n",is_folder(pathname));
+	dbprintf("Get first %d\n",dir_get_first(pathname));
+	dbprintf(pathname);
+	strcpy(pathname, directory);
+	dbprintf("Get next %d\n",dir_get_next(pathname));
+	dbprintf(pathname);*/
+	
+	if(is_folder(pathname)){
+		strcpy(file_name[i], "..");
+		file_type[i] = TUR_C;
+		i++;
+		numb_files++;
+		dir_get_first(pathname);
+		
+		do
+		{
+			char* pch = strstr (pathname,FORMAT_FILE);
+			char* pch2 = strstr (pathname,"..");
+			char* pch3 = strstr (pathname,".OUT");
+			pc = strncmp (pathname, ".", 2);
+			temp = is_folder(pathname);
+			/* If file has ".sfc" extension, is a folder and is not ".." and "." */
+			if ((pch2 == NULL && pch3 == NULL && pc != 0))
+			{
+				/* Copy string cotent from ent->d_name to file_name[i]*/
+				char *filename = NULL;
+				char *colon = strrchr ((char*)pathname, ':');
+				char *slash = strrchr ((char*)pathname, '/');
+				if (slash)
+					filename = slash + 1;
+				else
+					filename = colon + 1;
+				
+				strcpy(file_name[i], filename);
+				
+				if (pch != NULL)
+				{
+					file_type[i] = BLUE_C;
+				}
+				else if (temp)
+				{
+					file_type[i] = F_C;
+				}
+				else
+				{
+					file_type[i] = GREEN_C;
+				}
+
+				i++;
+				numb_files++;
+			}
+			
+		} while(0 <= dir_get_next(pathname));
+	}
+#endif
+#ifndef VERIX
+	DIR *dir;
+	struct dirent *ent;
 	
 	if ((dir = opendir (directory)) != NULL) 
 	{
@@ -571,10 +673,16 @@ void list_all_files(char* directory)
 			
 		}
 		closedir (dir);
+
 	} 
+	#endif
 	else 
 	{
+#ifdef VERIX
+		dbprintf("Not a directory");
+#else
 		perror ("Not a directory");
+#endif
 	}
 	
 	numb_files = numb_files - 1;
@@ -626,6 +734,9 @@ void print_string(char *s, unsigned short fg_color, unsigned short bg_color, int
 /* Is the path a folder ? */
 unsigned char is_folder(char* str1)
 {
+#ifdef VERIX
+	return (dir_get_attributes(str1) && ATTR_SUBDIR) ? 1 : 0;
+#else
 	struct stat st;
 	unsigned char temp;
 	
@@ -639,4 +750,5 @@ unsigned char is_folder(char* str1)
 	}
 	 
 	return temp;
+#endif
 }

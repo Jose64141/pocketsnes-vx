@@ -1,10 +1,8 @@
 
-#include <sal.h>
+#include <sal.h> 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "unzip.h"
-#include "zip.h"
 #include "menu.h"
 #include "snes9x.h"
 #include "memmap.h"
@@ -12,6 +10,11 @@
 #include "gfx.h"
 #include "soundux.h"
 #include "snapshot.h"
+
+#ifdef UNZIP_SUPPORT
+#include "unzip.h"
+#include "zip.h"
+#endif
 
 #define SNES_SCREEN_WIDTH  256
 #define SNES_SCREEN_HEIGHT 192
@@ -177,7 +180,7 @@ bool8_32 S9xDeinitUpdate (int Width, int Height, bool8_32)
 		sal_VideoPrint(200,0,mQuickStateDisplay,SAL_RGB(31,31,31));
 	}*/
 
-	sal_VideoFlip(0);
+	sal_VideoFlip(0); 
 }
 
 const char *S9xGetFilename (const char *ex)
@@ -187,9 +190,10 @@ const char *S9xGetFilename (const char *ex)
 	char ext [SAL_MAX_PATH];
 
 	sal_DirectorySplitFilename(Memory.ROMFilename, dir, fname, ext);
+	
 	strcpy(dir, sal_DirectoryGetHome());
 	sal_DirectoryCombine(dir,fname);
-	strcat (dir, ex);
+	strcat (dir, ex);	
 
 	return (dir);
 }
@@ -204,7 +208,7 @@ uint32 S9xReadJoypad (int which1)
 	
 	if (joy & SAL_INPUT_MENU)
 	{
-		if(mRomName[0] != 0) Memory.SaveSRAM ((s8*)S9xGetFilename (".srm.tns"));
+		if(mRomName[0] != 0) Memory.SaveSRAM ((s8*)S9xGetFilename (".srm"));
 		sal_InputIgnore();
 		S9xGraphicsDeinit();
 		Memory.Deinit();
@@ -271,6 +275,7 @@ const char *S9xGetFilenameInc (const char *e)
 
 void S9xSyncSpeed(void)
 {
+
 	if (Settings.SkipFrames == AUTO_FRAMERATE)
 	{
 		if (++IPPU.SkippedFrames < MAX_AUDIO_FRAMESKIP)
@@ -313,15 +318,15 @@ void PSNESForceSaveSRAM (void)
 {
 	if(mRomName[0] != 0)
 	{
-		Memory.SaveSRAM ((s8*)S9xGetFilename (".srm.tns"));
+		Memory.SaveSRAM ((s8*)S9xGetFilename (".srm"));
 	}
 }
 
-void S9xSaveSRAM (int showWarning)
+void S9xSaveSRAM (int showWarning) 
 {
 	if (CPU.SRAMModified)
 	{
-		if(!Memory.SaveSRAM ((s8*)S9xGetFilename (".srm.tns")))
+		if(!Memory.SaveSRAM ((s8*)S9xGetFilename (".srm")))
 		{
 			MenuMessageBox("Saving SRAM","Failed!","",MENU_MESSAGE_BOX_MODE_PAUSE);
 		}
@@ -340,14 +345,14 @@ void S9xAutoSaveSRAM (void)
 {
 	if (mMenuOptions.autoSaveSram)
 	{
-		Memory.SaveSRAM (S9xGetFilename (".srm.tns"));
+		Memory.SaveSRAM (S9xGetFilename (".srm"));
 		// sync(); // Only sync at exit or with a ROM change
 	}
 }
 
 void S9xLoadSRAM (void)
 {
-	Memory.LoadSRAM ((s8*)S9xGetFilename (".srm.tns"));
+	Memory.LoadSRAM ((s8*)S9xGetFilename (".srm"));
 }
 
 static u32 LastAudioRate = 0;
@@ -357,20 +362,18 @@ static u32 LastHz = 0;
 static int Run(int sound)
 {
 	bool PAL = !!(Memory.FillRAM[0x2133] & 4);
-
 	sal_VideoEnterGame(mMenuOptions.fullScreen, PAL, Memory.ROMFramesPerSecond);
 	LastPAL = PAL;
 
 	Settings.SoundSync = mMenuOptions.soundSync;
 	Settings.SkipFrames = mMenuOptions.frameSkip == 0 ? AUTO_FRAMERATE : mMenuOptions.frameSkip - 1;
 	sal_TimerInit(Settings.FrameTime);
-
+		
   	while(!mEnterMenu) 
   	{
 		//Run SNES for one glorious frame
 		S9xMainLoop ();
   	}
-
 	sal_VideoExitGame();
 
 	mEnterMenu=0;
@@ -514,6 +517,8 @@ void _splitpath (const char *path, char *drive, char *dir, char *fname,
 	char *ext)
 {
 	*drive = 0;
+	
+	char *colon = strrchr ((char*)path, ':'); // NULL; //
 
 	char *slash = strrchr ((char*)path, '/');
 	if (!slash)
@@ -534,11 +539,18 @@ void _splitpath (const char *path, char *drive, char *dir, char *fname,
 			strcpy (ext, dot + 1);
 		}
 		else
-			strcpy (ext, "");
+			strcpy (ext, ""); 
 	}
 	else
 	{
-		strcpy (dir, path);
+		if (colon)
+		{
+			strcpy (drive, path);
+			*(drive + (colon - path)) = 0;
+			strcpy (dir, colon+1);
+		}
+		else
+			strcpy (dir, path);
 		*(dir + (slash - path)) = 0;
 		strcpy (fname, slash + 1);
 		if (dot)
@@ -557,6 +569,7 @@ int mainEntry(char* romname)
 
 	sal_Init();
 	sal_VideoInit(16);
+	mMenuOptions.soundEnabled = 0;
 
 	snprintf(tempromname, sizeof(tempromname), "%s", S9xBasename(romname));
 	snprintf(mRomName, sizeof(mRomName), "%s", romname);

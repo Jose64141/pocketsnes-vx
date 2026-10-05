@@ -1,0 +1,57 @@
+
+# Define the applications properties here:
+
+TARGET = PocketSNES
+
+SDKBIN := $(VRXSDK)\\BIN
+CC  := $(SDKBIN)\vrxcc
+CXX := $(SDKBIN)\vrxcc
+VRXHDR := $(SDKBIN)\vrxhdr
+VLR := $(SDKBIN)\vlr
+STRIP := 
+
+ifdef V
+	CMD:=
+	SUM:=@\#
+else
+	CMD:=@
+	SUM:=@echo
+endif
+
+INCLUDE = -v -DVERIX -I pocketsnes -Isal/verix/ -Isal/ -I sal/verix/include -I sal/include -I pocketsnes/include -I menu -I pocketsnes/linux -I pocketsnes/snes9x
+CFLAGS =  -v -DVERIX -nostdlib -fdata-sections -ffunction-sections -fomit-frame-pointer -marm -march=armv6 -mtune=arm1136j-s -DRC_OPTIMIZED -DFOREVER_16_BIT -DNO_ASM -DNO_ROM_BROWSER $(INCLUDE)
+
+CXXFLAGS = $(CFLAGS)
+LDFLAGS = $(CXXFLAGS)  -nostdlib -Wl,--gc-sections -Wl,--as-needed -flto -lm
+
+# Find all source files
+SOURCE = pocketsnes/snes9x menu sal/verix sal
+SRC_CPP = $(foreach dir, $(SOURCE), $(wildcard $(dir)/*.cpp))
+SRC_C   = $(foreach dir, $(SOURCE), $(wildcard $(dir)/*.c))
+OBJ_CPP = $(patsubst %.cpp, %.o, $(SRC_CPP))
+OBJ_C   = $(patsubst %.c, %.o, $(SRC_C))
+OBJS    = $(OBJ_CPP) $(OBJ_C)
+
+
+all: $(TARGET) pack
+
+$(TARGET) : $(OBJS)
+	$(SUM) "  LD      $@"
+	$(CMD)$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -g $< -o $@
+
+%.o: %.c
+	$(SUM) "  CC      $@"
+	$(CMD)$(CC) $(CFLAGS) -c $< -o $@
+
+%.o: %.cpp
+	$(SUM) "  CXX     $@"
+	$(CMD)$(CXX) $(CFLAGS) -c $< -o $@
+
+pack : 
+	$(SUM) "  Pack     "
+	$(CMD)$(VRXHDR) -s 4194304 -h 8388608 $(TARGET)
+
+clean :
+	$(SUM) "  CLEAN   ."
+	$(CMD)rm -f $(OBJS) $(TARGET)
+	$(CMD)rm -rf .opk_data $(TARGET).opk

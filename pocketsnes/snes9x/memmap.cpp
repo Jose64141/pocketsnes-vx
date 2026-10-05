@@ -111,7 +111,10 @@
 #include "spc7110.h"
 #include "seta.h"
 
+#ifdef UNZIP_SUPPORT
 #include "unzip/unzip.h"
+#endif
+    
 
 #ifdef DS2_DMA
 #include "ds2_cpu.h"
@@ -828,7 +831,7 @@ again:
 }
 
 uint32 CMemory::FileLoader (uint8* buffer, const char* filename, int32 maxsize)
-{
+{ 
 
  
 	FILE* ROMFile;
@@ -847,10 +850,9 @@ uint32 CMemory::FileLoader (uint8* buffer, const char* filename, int32 maxsize)
 #ifdef UNZIP_SUPPORT
 	unzFile file=NULL;
 #endif
-    
 	_splitpath (filename, drive, dir, name, ext);
     _makepath (fname, drive, dir, name, ext);
-	
+
 #ifdef __WIN32__
 	// memmove required: Overlapping addresses [Neb]
     memmove (&ext [0], &ext[1], 4);

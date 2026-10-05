@@ -1,10 +1,10 @@
-#define MAX_LENGH 1024
+#define MAX_LENGH 250
 #define EXECUTE_APP
 
 #define TITLE_WINDOW "PocketSNES"
 
-#define FORMAT_FILE ".sfc"
-#define EXECUTABLE_NAME "pocketsnes.tns"
+#define FORMAT_FILE ".SFC"
+#define EXECUTABLE_NAME "H.OUT"
 #define DEFAULT_TEXT "   Select a Super Nintendo Rom file"
 #define CREDITS_TEXT "   PocketSNES ported by gameblabla"
 #define FILE_DELETED "File deleted !"
@@ -27,7 +27,20 @@
 	int mainEntry(char* romname);
 #endif
 
-#ifdef ndlib
+
+#ifdef VERIX
+
+#define PAD_UP			(key == 0xDA)
+#define PAD_DOWN		(key == 0xDB)
+#define PAD_LEFT		(key == 0xDC)
+#define PAD_RIGHT		(key == 0xDD)
+
+#define PAD_CONFIRM		(key == 0x8D)
+#define PAD_CONFIRM2	(key == 0xDE)
+#define PAD_DELETE		(key == 0xFF)
+#define PAD_QUIT		(key == 0x88)
+
+#elif defined (ndlib)
 
 #define PAD_UP			isKeyPressed(KEY_NSPIRE_UP)
 #define PAD_DOWN		isKeyPressed(KEY_NSPIRE_DOWN)
@@ -51,7 +64,8 @@
 #define PAD_DELETE		keystate[SDLK_BACKSPACE]
 #define PAD_QUIT		keystate[SDLK_ESCAPE]
 
-#endif
+#endif 
+
 
 void init (void);
 void controls ();

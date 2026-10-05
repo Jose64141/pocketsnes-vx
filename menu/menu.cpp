@@ -1,6 +1,6 @@
 #include <errno.h>
+#include <sal.h>
 
-#include "sal.h"
 #include "menu.h"
 #include "snapshot.h"
 #include "snes9x.h"
@@ -8,7 +8,7 @@
 #include "memmap.h"
 #include "soundux.h"
 
-#define MAX_DISPLAY_CHARS			40
+#define MAX_DISPLAY_CHARS			40  
 
 #define ROM_SELECTOR_SAVE_DEFAULT_DIR		0
 #define ROM_SELECTOR_MAIN_MENU			1

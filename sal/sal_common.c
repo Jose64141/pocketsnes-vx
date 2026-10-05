@@ -10,13 +10,15 @@ which is a pain in the ass especially as I'm always changing things
 */
 
 #include <sal.h>
+#ifndef VERIX
 #include <png.h>
 #include <unzip.h>
 #include <zip.h>
+#endif
 
 #include "sal_common.h"
 
-#define SAL_FRAME_BUFFER_COUNT	4
+#define SAL_FRAME_BUFFER_COUNT	4  
 
 u32 mInputRepeat=0;
 u32 mInputRepeatTimer[32];
@@ -343,28 +345,32 @@ s32 sal_StringCompare(const char *string1, const char *string2)
 
 }
 
-const char * sal_DirectoryGetHome(void)
+const char * sal_DirectoryGetHome(void) 
 {
 	static char home [SAL_MAX_PATH];
 
 	snprintf(home, sizeof(home), "%s", sal_DirectoryGetTemp());
-	sal_DirectoryCombine(home, ".pocketsnes");
+	sal_DirectoryCombine(home, "SNES"); //sal_DirectoryCombine(home, ".pocketsnes");
 
 	/* Create the directory if it didn't already exist */
+#ifdef VERIX
+	mkdir(home);
+#else
 	mkdir(home, 0755);
+#endif
 	
 	return home;
 }
 
 const char * sal_DirectoryGetUser(void)
 {
-	return "/documents/ndless/";
+	return "I:1";
 }
 
 void sal_DirectorySplitFilename(const char *wholeFilename, s8* path, s8 *filename, s8 *ext)
 {
 	u32 len=(u32)strlen(wholeFilename);
-	s32 i=0,dot=-1,slash=-1;
+	s32 i=0,dot=-1,slash=-1,colon=-1;
 
 	ext[0]=0;
 	filename[0]=0;
@@ -383,12 +389,20 @@ void sal_DirectorySplitFilename(const char *wholeFilename, s8* path, s8 *filenam
 			dot=i;
 		}
 		
+		if ((wholeFilename[i]==':') && (colon==-1))
+		{
+			colon=i;
+		}
+		
 		if ((wholeFilename[i]==(s8)SAL_DIR_SEP[0]) && (slash==-1))
 		{
 			slash=i;
 			break;
 		}
 	}
+	
+	if ((colon>=0) && (slash==-1))
+		slash = colon;
 
 	//Did we find an extension
 	if (slash>=0)

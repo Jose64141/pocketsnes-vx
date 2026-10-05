@@ -1,7 +1,9 @@
 #ifndef __SAL_COMMON_H__
 #define __SAL_COMMON_H__
 
+#ifndef VERIX
 #include <dirent.h>
+#endif
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -109,11 +111,13 @@ u32 sal_InputPollRepeat();
 
 void sal_Sleep(u32 milliSecs);
 
+#ifdef UNZIP_SUPPORT
 s32 sal_ZipLoad(const char *filename, s8 *buffer, s32 bufferMaxSize, s32 *file_size);
 s32 sal_ZipSave(const char *filename, s8 *firstFilename, s8 *buffer, s32 size);
 s32 sal_ZipGetFirstCrc(const char *filename, s32 *crc);
 void sal_ZipGetFirstFilename(const char *filename, s8 *longfilename);
 s32 sal_ZipCheck(const char *filename);
+#endif
 
 s32 sal_FileLoad(const char *filename, u8 *buffer, u32 maxsize, u32 *filesize);
 s32 sal_FileSave(const char *filename, u8 *buffer, u32 bufferSize);
@@ -142,4 +146,4 @@ s32 sal_ImageDrawTiled(u16 *image, u32 width, u32 height, s32 xScroll, s32 yScro
 s32 sal_ImageDraw(u16 *image, u32 width, u32 height, s32 x, s32 y);
 s32 sal_HighlightBar(s32 width, s32 height, s32 x, s32 y);
 
-#endif /* __SAL_COMMON_H__ */
+#endif /* __SAL_COMMON_H__ */ 
