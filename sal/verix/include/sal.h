@@ -59,23 +59,6 @@ extern "C" {
 #define SAL_INPUT_STICK_PUSH		(1<<SAL_INPUT_INDEX_STICK_PUSH)
 #define SAL_INPUT_MENU		(1<<SAL_INPUT_INDEX_MENU)
 
-#define KEY_VERIX_UP		0xDA 
-#define KEY_VERIX_DOWN		0xDB	
-#define KEY_VERIX_LEFT		0xDC	
-#define KEY_VERIX_RIGHT		0xDD	
-#define KEY_VERIX_A			0xB9
-#define KEY_VERIX_B			0xB8
-#define KEY_VERIX_X			0xB6
-#define KEY_VERIX_Y			0xB5
-#define KEY_VERIX_L			0xB2
-#define KEY_VERIX_R			0xB3
-#define KEY_VERIX_START		0x8D
-#define KEY_VERIX_SELECT		0x88
-#define KEY_VERIX_VOL_UP			12
-#define KEY_VERIX_VOL_DOWN		13
-#define KEY_VERIX_STICK_PUSH		14
-#define KEY_VERIX_MENU		0xE1
-
 #define SAL_SCREEN_WIDTH			320
 #define SAL_SCREEN_HEIGHT			240
 #define SAL_MAX_PATH				256
@@ -95,10 +78,13 @@ extern "C" {
 
 #include <SVC.H>
 #include "sal_common.h"
+#include "verix_keys.h"
 
 //u32 sal_FileList[VERIX_MAX_FILES];
 //const char* sal_FileNameList[VERIX_MAX_FILES]; 
 u32 sal_InputWait();
+
+u32 verix_KbdPoll(int kbdHdl, char *key);
 
 #ifdef __cplusplus
 }

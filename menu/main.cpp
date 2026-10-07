@@ -219,7 +219,11 @@ uint32 S9xReadJoypad (int which1)
 		GFX.ZBuffer=NULL;
 		GFX.SubScreen=NULL;
 		sal_Reset();	
+		#ifdef VERIX
+		SVC_RESTART("");
+		#else
 		exit(0);
+		#endif
 		return val;
 	}
 	

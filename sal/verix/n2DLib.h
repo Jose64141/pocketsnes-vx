@@ -44,9 +44,11 @@ extern void drawChar(int*, int*, int, char, unsigned short, unsigned short);
 extern int numberWidth(int);
 extern int stringWidth(const char*);
 
+#define EVT_SNES_KBD 1<<9
 #define BUFF_BYTES_SIZE (320*240*2)
 extern unsigned short *BUFF_BASE_ADDRESS;
 extern int console;
+extern int kbd;
 #ifdef __cplusplus
 }
 #endif

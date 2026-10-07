@@ -1,7 +1,7 @@
 *.o 
 *.t
 *.sfc
-PocketSNES.*
+# PocketSNES.*
 pocketsnes/snes9x/*.o
 menu/*.o
 sal/*.o
@@ -9,6 +9,6 @@ sal/linux/*.o
 sal/prizm/*.o
 sal/verix/*.o
 sal/sdl/*.o
-*.out
+# *.out
 *.axf
 *.map

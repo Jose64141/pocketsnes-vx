@@ -1,24 +1,15 @@
-EDIT: Source code to the latest version got lost.
-
-I thought i committed it on github but oh well.
-
-You can find it in Releases.
-
-
-PocketSNES for TI Nspire CX
+PocketSNES for Verifone VerixV Terminals
 ==========================
 
-Port done by gameblabla
+Port done by Jose64141, based on gameblabla's port for TI Nspire CX
 
 PocketSNES was originally a SNES emulator by Nebuleon for GCW0.
 
 He abandoned it after a clash with a dingoonity member.
 
-I then took his emulator and removed the spu & apu code. (since the ti nspire doesn't officially support sound)
+I then took his emulator and removed the spu & apu code. (since the ti nspire nor Verix don't officially support sound)
 
-It runs actually pretty cool on TI Nspire CX, thanks to autoframeskipping.
-
-Of course, if you overclock your calc, it'll run faster.
+It runs actually pretty cool on TI Nspire CX and Verix terminals, thanks to autoframeskipping.
 
 Incompatible games are :
 
@@ -29,20 +20,16 @@ These 3 games uses the SDD1 chip and Snes9x 1.43 requires graphics pack for them
 CONTROLS
 ==========
 
-CTRL = A
+|        | **Pad** | **KBD** |
+|:------:|:-------:|:-------:|
+|    A   |    9    |    V    |
+|    B   |    8    |    C    |
+|    X   |    6    |    D    |
+|    Y   |    7    |    X    |
+|    L   |    2    |    A    |
+|    R   |    3    |    S    |
+|  START |    OK   |   SPA   |
+| SELECT |   BSP   |   ENT   |
+|  EXIT  |    F1   |   ESC   |
 
-SHIFT = B
-
-VAR = X
-
-DEL = Y
-
-TAB = L
-
-MENU= R
-
-ENTER = START
-
-MINUS = SELECT
-
-ESC = EXIT
+Keyboard mapping based on Snes9x PC default. Also, it only works ingame, not for the menu.

@@ -11,7 +11,7 @@ extern "C" {
 
 unsigned short *BUFF_BASE_ADDRESS, *ALT_SCREEN_BASE_ADDRESS, *INV_BUFF, *temp;
 void *SCREEN_BACKUP;
-int console = -1;
+int console, kbd = -1;
 int swapped = 0; 
 
 void initBuffering()
@@ -19,6 +19,8 @@ void initBuffering()
 	// Verix setup [By gonza]
 	set_backlight_level(100);
 	console = open(DEV_CONSOLE, 0);
+	kbd = open(DEV_KYBD, 0);
+	set_event_bit(kbd, EVT_SNES_KBD);
 	key_beeps(0);
 	if (get_display_coordinate_mode() != PIXEL_MODE) {
 		set_display_coordinate_mode(PIXEL_MODE);
@@ -64,6 +66,7 @@ void deinitBuffering()
 	free(ALT_SCREEN_BASE_ADDRESS);
 	free(BUFF_BASE_ADDRESS);
 	close(console);
+	close(kbd);
 }
 
 /*                 *

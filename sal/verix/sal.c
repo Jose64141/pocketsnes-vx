@@ -21,6 +21,7 @@ static u32 mInputFirst=0;
 s32 mCpuSpeedLookup[1]={0};
 
 extern int console;
+extern int kbd;
 #include <sal_common.h> 
 
 /*#define CASE(sym, key) \
@@ -31,7 +32,69 @@ extern int console;
 */
 
 static u32 inputHeld = 0;
+static u32 kbdInputMask = 0;
 
+u32 verix_KbdPoll(int kbdHdl, char *key, char *clear)
+{
+	*clear = 0;
+	read(kbd, key, 1);
+	// Based on default Snes9x mapping
+	if (key[0] == 0xE0) {
+		int keyTemp = key[0] << 8;
+		read(kbdHdl, key, 1);
+		if (key[0] == 0xF0)
+		{
+			*clear = 1;
+			read(kbdHdl, key, 1);
+		}
+		keyTemp |=  key[0];
+		switch(keyTemp) 
+		{
+			case KBD_VERIX_UP: 
+				return SAL_INPUT_UP;
+			case KBD_VERIX_DOWN: 
+				return SAL_INPUT_DOWN;
+			case KBD_VERIX_LEFT: 
+				return SAL_INPUT_LEFT;
+			case KBD_VERIX_RIGHT: 
+				return SAL_INPUT_RIGHT;
+			default:
+				break;
+		}
+	}
+	
+	if (key[0] == 0xF0)
+	{
+		*clear = 1;
+		read(kbdHdl, key, 1);
+	}
+	switch(key[0]) 
+		{
+			case KBD_VERIX_V: 
+				return SAL_INPUT_A;
+			case KBD_VERIX_C: 
+				return SAL_INPUT_B;
+			case KBD_VERIX_D: 
+				return SAL_INPUT_X;
+			case KBD_VERIX_X: 
+				return SAL_INPUT_Y;
+			case KBD_VERIX_A: 
+				return SAL_INPUT_L;
+			case KBD_VERIX_S: 
+				return SAL_INPUT_R;
+				
+			case KBD_VERIX_SPACE: 
+				return SAL_INPUT_START;
+			case KBD_VERIX_ENTER: 
+				return SAL_INPUT_SELECT;
+				
+			case KBD_VERIX_ESC: 
+				return SAL_INPUT_MENU;
+			
+			default:
+				return 0;
+		}
+}
 
 static u32 sal_Input(int held)
 {
@@ -123,6 +186,17 @@ static u32 sal_Input(int held)
 				break;
 		}
 	}
+	
+	if ((kbd >= 0) && (read_event() & EVT_SNES_KBD)) 
+	{
+		char clear = 0;
+		u32 kbdInput = verix_KbdPoll(kbd, keyBuffer, &clear);
+		if (clear)
+			kbdInputMask &= ~(kbdInput);
+		else
+			kbdInputMask |= kbdInput;
+	}
+	
 	// Process key repeats
 	timer=sal_TimerRead();
 	for (i=0;i<19;i++)
@@ -171,7 +245,7 @@ static u32 sal_Input(int held)
 		mInputRepeat=0;
 	}*/
 
-	return inputHeld;
+	return inputHeld | kbdInputMask;
 }
 
 static int key_repeat_enabled = 1;
@@ -248,15 +322,9 @@ u32 sal_CpuSpeedPreviousFast(u32 currSpeed)
 
 s32 sal_Init(void)
 {
-	/*if( SDL_Init( SDL_INIT_VIDEO ) == -1 )
-	{
-		return SAL_ERROR;
-	}*/
 	sal_TimerInit(60);
 
 	memset(mInputRepeatTimer,0,sizeof(mInputRepeatTimer));
-
-	/*SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);*/
 
 	return SAL_OK;
 }
@@ -283,7 +351,6 @@ u32 sal_VideoGetHeight()
 
 u32 sal_VideoGetPitch()
 {
-	/*return 320;*/
 	return 320*2;
 }
 
@@ -314,20 +381,11 @@ void sal_VideoBitmapDim(u16* img, u32 pixelCount)
 
 void sal_VideoFlip(s32 vsync)
 {
-	//dbprintf("	Update screen.");
-	//dbdump(BUFF_BASE_ADDRESS, BUFF_BYTES_SIZE);
 	 updateScreen();
-	/*if (SDL_MUSTLOCK(mScreen)) {
-		SDL_UnlockSurface(mScreen); 
-		SDL_Flip(mScreen);
-		SDL_LockSurface(mScreen);
-	} else
-		SDL_Flip(mScreen);*/
 }
 
 void *sal_VideoGetBuffer()
 {
-	/*return (void*)mScreen->pixels;*/
 	return (void*)BUFF_BASE_ADDRESS;
 }
 
